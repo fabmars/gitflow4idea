@@ -3,6 +3,7 @@ package gitflow.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitRepository;
 import gitflow.GitflowConfigUtil;
@@ -23,10 +24,11 @@ public class PublishBugfixAction extends AbstractPublishAction {
     public void actionPerformed(AnActionEvent anActionEvent) {
         super.actionPerformed(anActionEvent);
 
-        GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+        Project project = anActionEvent.getProject();
+        GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
         final String bugfixName = gitflowConfigUtil.getBugfixNameFromBranch(branchUtil.getCurrentBranchName());
 
-        new Task.Backgroundable(myProject,"Publishing bugfix "+bugfixName,false){
+        new Task.Backgroundable(project,"Publishing bugfix "+bugfixName,false){
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 GitCommandResult result = myGitflow.publishBugfix(myRepo, bugfixName,new GitflowErrorsListener(myProject));

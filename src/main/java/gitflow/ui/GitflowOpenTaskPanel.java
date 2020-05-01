@@ -14,10 +14,7 @@ import gitflow.GitflowBranchUtil;
 import gitflow.GitflowBranchUtilManager;
 import gitflow.GitflowConfigUtil;
 import gitflow.GitflowState;
-import gitflow.actions.GitflowAction;
-import gitflow.actions.StartBugfixAction;
-import gitflow.actions.StartFeatureAction;
-import gitflow.actions.StartHotfixAction;
+import gitflow.actions.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -32,13 +29,13 @@ public class GitflowOpenTaskPanel extends TaskDialogPanel implements ItemListene
     private JRadioButton startFeatureRadioButton;
     private JRadioButton startHotfixRadioButton;
     private JTextField featureName;
-    private JComboBox featureBaseBranch;
+    private JComboBox<GitflowBranchUtil.ComboEntry> featureBaseBranch;
     private JTextField hotfixName;
     private JPanel myPanel;
-    private JComboBox hotfixBaseBranch;
+    private JComboBox<GitflowBranchUtil.ComboEntry> hotfixBaseBranch;
     private JRadioButton startBugfixRadioButton;
     private JTextField bugfixName;
-    private JComboBox bugfixBaseBranch;
+    private JComboBox<GitflowBranchUtil.ComboEntry> bugfixBaseBranch;
 
     private Project myProject;
     private GitRepository myRepo;
@@ -142,22 +139,19 @@ public class GitflowOpenTaskPanel extends TaskDialogPanel implements ItemListene
      * @param baseBranchName Branch name of the branch the new one is based on
      * @param fullBranchName Branch name with feature/hotfix/bugfix prefix for saving to task
      */
-    private void attachTaskAndRunAction(GitflowAction action, String baseBranchName, final String fullBranchName) {
+    private void attachTaskAndRunAction(AbstractStartAction action, String baseBranchName, final String fullBranchName) {
         final String branchName = gitflowBranchUtil.stripFullBranchName(fullBranchName);
 
         //Create new branch / checkout branch
-        action.runAction(myProject, baseBranchName, branchName, new Runnable() {
-            @Override
-            public void run() {
-                final TaskInfo[] next = {new TaskInfo(fullBranchName, Collections.singleton(myRepo.getPresentableUrl()))};
-                final LocalTask localTask = myTaskManager.getActiveTask();
+        action.runAction(myProject, baseBranchName, branchName, () -> {
+            final TaskInfo[] next = {new TaskInfo(fullBranchName, Collections.singleton(myRepo.getPresentableUrl()))};
+            final LocalTask localTask = myTaskManager.getActiveTask();
 
-                //Add branch to task
-                TaskManagerImpl.addBranches(localTask, next, false);
+            //Add branch to task
+            TaskManagerImpl.addBranches(localTask, next, false);
 
-                //maps branch to task
-                gitflowState.setTaskBranch(currentTask, fullBranchName);
-            }
+            //maps branch to task
+            gitflowState.setTaskBranch(currentTask, fullBranchName);
         });
     }
 

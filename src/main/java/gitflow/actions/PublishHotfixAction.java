@@ -3,7 +3,7 @@ package gitflow.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
-import git4idea.commands.Git;
+import com.intellij.openapi.project.Project;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitRepository;
 import gitflow.GitflowConfigUtil;
@@ -23,11 +23,12 @@ public class PublishHotfixAction extends AbstractPublishAction {
     public void actionPerformed(AnActionEvent anActionEvent) {
         super.actionPerformed(anActionEvent);
 
-        GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+        Project project = anActionEvent.getProject();
+        GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
         final String hotfixName = gitflowConfigUtil.getHotfixNameFromBranch(branchUtil.getCurrentBranchName());
-        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
 
-        new Task.Backgroundable(myProject, "Publishing hotfix " + hotfixName, false) {
+        new Task.Backgroundable(project, "Publishing hotfix " + hotfixName, false) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 GitCommandResult result = myGitflow.publishHotfix(myRepo, hotfixName, errorLineHandler);

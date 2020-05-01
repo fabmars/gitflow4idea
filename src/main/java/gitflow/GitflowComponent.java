@@ -63,7 +63,7 @@ public class GitflowComponent implements ProjectComponent, VcsListener {
             //make sure to not reinitialize the widget if it's already present
             if (GitflowVersionTester.forProject(myProject).isSupportedVersion() && myGitflowWidget == null) {
                 myGitflowWidget = new GitflowWidget(myProject);
-                widgetToAdd = (StatusBarWidget) myGitflowWidget;
+                widgetToAdd = myGitflowWidget;
             } else {
                 widgetToAdd = new GitflowUnsupportedVersionWidget(myProject);
             }

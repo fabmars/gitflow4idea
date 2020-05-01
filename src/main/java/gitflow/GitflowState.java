@@ -25,7 +25,7 @@ public class GitflowState implements PersistentStateComponent<GitflowState> {
 
 
     public GitflowState() {
-        taskBranches = new HashMap<String, String>();
+        taskBranches = new HashMap<>();
     }
 
 

@@ -25,7 +25,8 @@ public class StartFeatureAction extends AbstractStartAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        GitflowStartFeatureDialog dialog = new GitflowStartFeatureDialog(myProject, myRepo);
+        Project project = e.getProject();
+        GitflowStartFeatureDialog dialog = new GitflowStartFeatureDialog(project, myRepo);
         dialog.show();
 
         if (dialog.getExitCode() != DialogWrapper.OK_EXIT_CODE) return;
@@ -37,12 +38,11 @@ public class StartFeatureAction extends AbstractStartAction {
     }
 
     public void runAction(Project project, final String baseBranchName, final String featureName, @Nullable final Runnable callInAwtLater){
-        super.runAction(project, baseBranchName, featureName, callInAwtLater);
 
-        new Task.Backgroundable(myProject, "Starting feature " + featureName, false) {
+        new Task.Backgroundable(project, "Starting feature " + featureName, false) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                final GitCommandResult commandResult = createFeatureBranch(baseBranchName, featureName);
+                final GitCommandResult commandResult = createFeatureBranch(project, baseBranchName, featureName);
                 if (callInAwtLater != null && commandResult.success()) {
                     callInAwtLater.run();
                 }
@@ -50,15 +50,15 @@ public class StartFeatureAction extends AbstractStartAction {
         }.queue();
     }
 
-    private GitCommandResult createFeatureBranch(String baseBranchName, String featureName) {
-        GitflowErrorsListener errorListener = new GitflowErrorsListener(myProject);
+    private GitCommandResult createFeatureBranch(Project project, String baseBranchName, String featureName) {
+        GitflowErrorsListener errorListener = new GitflowErrorsListener(project);
         GitCommandResult result = myGitflow.startFeature(myRepo, featureName, baseBranchName, errorListener);
 
         if (result.success()) {
             String startedFeatureMessage = String.format("A new branch '%s%s' was created, based on '%s'", branchUtil.getPrefixFeature(), featureName, baseBranchName);
-            NotifyUtil.notifySuccess(myProject, featureName, startedFeatureMessage);
+            NotifyUtil.notifySuccess(project, featureName, startedFeatureMessage);
         } else {
-            NotifyUtil.notifyError(myProject, "Error", "Please have a look at the Version Control console for more details");
+            NotifyUtil.notifyError(project, "Error", "Please have a look at the Version Control console for more details");
         }
 
         myRepo.update();

@@ -3,6 +3,7 @@ package gitflow.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitRepository;
 import gitflow.GitflowConfigUtil;
@@ -23,11 +24,12 @@ public class PublishReleaseAction extends AbstractPublishAction {
     public void actionPerformed(AnActionEvent anActionEvent) {
         super.actionPerformed(anActionEvent);
 
-        GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
-        final String releaseName= gitflowConfigUtil.getReleaseNameFromBranch(branchUtil.getCurrentBranchName());
-        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+        Project project = anActionEvent.getProject();
+        GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
+        final String releaseName = gitflowConfigUtil.getReleaseNameFromBranch(branchUtil.getCurrentBranchName());
+        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
 
-        new Task.Backgroundable(myProject,"Publishing release "+releaseName,false){
+        new Task.Backgroundable(project,"Publishing release "+releaseName,false){
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 GitCommandResult result = myGitflow.publishRelease(myRepo, releaseName, errorLineHandler);

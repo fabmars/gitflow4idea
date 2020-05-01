@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class FinishFeatureAction extends AbstractBranchAction {
 
-    String customFeatureName=null;
+    String customFeatureName;
 
     public FinishFeatureAction() {
         super("Finish Feature", BranchType.Feature);
@@ -25,7 +25,7 @@ public class FinishFeatureAction extends AbstractBranchAction {
 
     FinishFeatureAction(GitRepository repo, String name) {
         super(repo, "Finish Feature", BranchType.Feature);
-        customFeatureName=name;
+        customFeatureName = name;
     }
 
     @Override
@@ -33,34 +33,34 @@ public class FinishFeatureAction extends AbstractBranchAction {
         super.actionPerformed(e);
 
         String currentBranchName = GitBranchUtil.getBranchNameOrRev(myRepo);
-        if (currentBranchName.isEmpty()==false){
+        if (!currentBranchName.isEmpty()){
 
-            final AnActionEvent event=e;
+            Project project = e.getProject();
+            final AnActionEvent event = e;
             final String featureName;
             // Check if a feature name was specified, otherwise take name from current branch
-            if (customFeatureName!=null){
+            if (customFeatureName != null){
                 featureName = customFeatureName;
             }
             else{
-                GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+                GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
                 featureName = gitflowConfigUtil.getFeatureNameFromBranch(currentBranchName);
             }
 
-            this.runAction(myProject, featureName);
+            this.runAction(project, featureName);
         }
 
     }
 
     public void runAction(final Project project, final String featureName){
-        super.runAction(project, null, featureName, null);
 
-        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
         final FinishFeatureAction that = this;
 
         //get the base branch for this feature
         GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
 
-        new Task.Backgroundable(myProject,"Finishing feature "+featureName,false){
+        new Task.Backgroundable(project,"Finishing feature "+featureName,false){
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 final String baseBranch = gitflowConfigUtil.getBaseBranch(branchUtil.getPrefixFeature()+featureName);
@@ -88,15 +88,15 @@ public class FinishFeatureAction extends AbstractBranchAction {
 
                 //merge conflicts if necessary
                 if (errorLineHandler.hasMergeError){
-                    if (handleMerge()){
+                    if (handleMerge(project)){
                         that.runAction(project, featureName);
-                        FinishFeatureAction completeFinishFeatureAction = new FinishFeatureAction(myRepo, featureName);
+                        //FinishFeatureAction completeFinishFeatureAction = new FinishFeatureAction(myRepo, featureName);
                     }
 
                 }
 
             }
-        }.queue();;
+        }.queue();
     }
 
 }

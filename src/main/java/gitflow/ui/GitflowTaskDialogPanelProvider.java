@@ -1,5 +1,5 @@
 package gitflow.ui;
-import com.intellij.openapi.components.PersistentStateComponent;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.tasks.LocalTask;
 import com.intellij.tasks.Task;
@@ -12,9 +12,6 @@ import gitflow.GitflowBranchUtil;
 import gitflow.GitflowBranchUtilManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Enumeration;
-import java.util.HashMap;
 
 public class GitflowTaskDialogPanelProvider extends TaskDialogPanelProvider {
 

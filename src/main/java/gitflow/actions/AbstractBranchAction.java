@@ -30,13 +30,13 @@ public abstract class AbstractBranchAction extends GitflowAction {
         }
 
         //Disable and hide when gitflow has not been setup
-        if (branchUtil.hasGitflow() == false) {
+        if (!branchUtil.hasGitflow()) {
             e.getPresentation().setEnabledAndVisible(false);
             return;
         }
 
         //Disable and hide when the branch-type is incorrect
-        if (isActionAllowedForBranch() == false) {
+        if (!isActionAllowedForBranch()) {
             e.getPresentation().setEnabledAndVisible(false);
         } else {
             e.getPresentation().setEnabledAndVisible(true);

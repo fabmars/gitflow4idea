@@ -29,20 +29,21 @@ public class FinishHotfixAction extends AbstractBranchAction {
         String currentBranchName = GitBranchUtil.getBranchNameOrRev(myRepo);
 
 
-        if (currentBranchName.isEmpty() == false){
+        if (!currentBranchName.isEmpty()){
 
-            GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+            Project project = e.getProject();
+            GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
             //TODO HOTFIX NAME
             final String hotfixName = gitflowConfigUtil.getHotfixNameFromBranch(currentBranchName);
 
             final String tagMessage;
-            String tagMessageTemplate = GitflowConfigurable.getOptionTextString(myProject, "HOTFIX_customHotfixCommitMessage").replace("%name%", hotfixName);
+            String tagMessageTemplate = GitflowConfigurable.getOptionTextString(project, "HOTFIX_customHotfixCommitMessage").replace("%name%", hotfixName);
 
-            if (GitflowConfigurable.isOptionActive(myProject, "HOTFIX_dontTag")) {
+            if (GitflowConfigurable.isOptionActive(project, "HOTFIX_dontTag")) {
                 tagMessage = "";
             }
             else {
-                tagMessage = Messages.showInputDialog(myProject, "Enter the tag message:", "Finish Hotfix", Messages.getQuestionIcon(), tagMessageTemplate, null);
+                tagMessage = Messages.showInputDialog(project, "Enter the tag message:", "Finish Hotfix", Messages.getQuestionIcon(), tagMessageTemplate, null);
             }
 
             this.runAction(e.getProject(), hotfixName, tagMessage);
@@ -52,15 +53,14 @@ public class FinishHotfixAction extends AbstractBranchAction {
     }
 
     public void runAction(final Project project, final String hotfixName, final String tagMessage){
-        super.runAction(project, null, hotfixName, null);
 
-        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
 
-        if (tagMessage!=null){
-            new Task.Backgroundable(myProject,"Finishing hotfix "+hotfixName,false){
+        if (tagMessage != null){
+            new Task.Backgroundable(project,"Finishing hotfix "+hotfixName,false){
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
-                    GitCommandResult result=  myGitflow.finishHotfix(myRepo, hotfixName, tagMessage, errorLineHandler);
+                    GitCommandResult result =  myGitflow.finishHotfix(myRepo, hotfixName, tagMessage, errorLineHandler);
 
                     if (result.success()) {
                         String finishedHotfixMessage = String.format("The hotfix branch '%s%s' was merged into '%s' and '%s'", branchUtil.getPrefixHotfix(), hotfixName, branchUtil.getBranchnameDevelop(), branchUtil.getBranchnameMaster());

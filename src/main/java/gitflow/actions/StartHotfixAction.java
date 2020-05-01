@@ -27,7 +27,8 @@ public class StartHotfixAction extends AbstractStartAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        GitflowStartHotfixDialog dialog = new GitflowStartHotfixDialog(myProject, myRepo);
+        Project project = e.getProject();
+        GitflowStartHotfixDialog dialog = new GitflowStartHotfixDialog(project, myRepo);
         dialog.show();
 
         if (dialog.getExitCode() != DialogWrapper.OK_EXIT_CODE) return;
@@ -39,12 +40,11 @@ public class StartHotfixAction extends AbstractStartAction {
     }
 
     public void runAction(Project project, final String baseBranchName, final String hotfixName, @Nullable final Runnable callInAwtLater){
-        super.runAction(project, baseBranchName, hotfixName, callInAwtLater);
 
-        new Task.Backgroundable(myProject, "Starting hotfix " + hotfixName, false) {
+        new Task.Backgroundable(project, "Starting hotfix " + hotfixName, false) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                final GitCommandResult commandResult = createHotfixBranch(baseBranchName, hotfixName);
+                final GitCommandResult commandResult = createHotfixBranch(project, baseBranchName, hotfixName);
                 if (callInAwtLater != null && commandResult.success()) {
                     callInAwtLater.run();
                 }
@@ -52,16 +52,16 @@ public class StartHotfixAction extends AbstractStartAction {
         }.queue();
     }
 
-    private GitCommandResult createHotfixBranch(String baseBranchName, String hotfixBranchName) {
-        GitflowErrorsListener errorListener = new GitflowErrorsListener(myProject);
+    private GitCommandResult createHotfixBranch(Project project, String baseBranchName, String hotfixBranchName) {
+        GitflowErrorsListener errorListener = new GitflowErrorsListener(project);
         GitCommandResult result = myGitflow.startHotfix(myRepo, hotfixBranchName, baseBranchName, errorListener);
 
         if (result.success()) {
             String startedHotfixMessage = String.format("A new hotfix '%s%s' was created, based on '%s'",
                     branchUtil.getPrefixHotfix(), hotfixBranchName, baseBranchName);
-            NotifyUtil.notifySuccess(myProject, hotfixBranchName, startedHotfixMessage);
+            NotifyUtil.notifySuccess(project, hotfixBranchName, startedHotfixMessage);
         } else {
-            NotifyUtil.notifyError(myProject, "Error", "Please have a look at the Version Control console for more details");
+            NotifyUtil.notifyError(project, "Error", "Please have a look at the Version Control console for more details");
         }
 
         myRepo.update();

@@ -8,7 +8,6 @@ import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -45,9 +44,7 @@ public class GitflowPopupGroup {
             actionGroup.addAll(repoActions);
         }
         else{
-            Iterator gitRepositoriesIterator = gitRepositories.iterator();
-            while(gitRepositoriesIterator.hasNext()){
-                GitRepository repo = (GitRepository) gitRepositoriesIterator.next();
+            for(GitRepository repo : gitRepositories){
                 RepoActions repoActions = new RepoActions(myProject, repo);
                 actionGroup.add(repoActions);
             }

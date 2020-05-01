@@ -15,7 +15,6 @@
  */
 package gitflow.ui;
 
-import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -28,25 +27,19 @@ import com.intellij.openapi.wm.StatusBarWidget;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.popup.PopupFactoryImpl;
 import com.intellij.util.Consumer;
-
+import git4idea.GitUtil;
+import git4idea.branch.GitBranchUtil;
+import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryChangeListener;
+import git4idea.ui.branch.GitBranchWidget;
 import gitflow.GitflowBranchUtil;
 import gitflow.GitflowBranchUtilManager;
 import gitflow.actions.GitflowPopupGroup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.awt.event.MouseEvent;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import javax.swing.JFrame;
-
-import git4idea.GitUtil;
-import git4idea.branch.GitBranchUtil;
-import git4idea.repo.GitRepository;
-import git4idea.repo.GitRepositoryChangeListener;
-import git4idea.ui.branch.GitBranchWidget;
-import gitflow.actions.GitflowActions;
 
 /**
  * Status bar widget which displays actions for git flow
@@ -131,20 +124,11 @@ public class GitflowWidget extends GitBranchWidget implements GitRepositoryChang
     @Override
     // Updates branch information on click
     public Consumer<MouseEvent> getClickConsumer() {
-        return new Consumer<MouseEvent>() {
-            public void consume(MouseEvent mouseEvent) {
-                updateAsync();
-            }
-        };
+        return mouseEvent -> updateAsync();
     }
 
     private void updateAsync() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                update();
-            }
-        });
+        ApplicationManager.getApplication().invokeLater(() -> update());
     }
 
     private void update() {

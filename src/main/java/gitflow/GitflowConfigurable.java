@@ -29,7 +29,7 @@ public class GitflowConfigurable implements Configurable {
     public GitflowConfigurable(Project project) {
         gitflowOptions = GitflowOptionsFactory.getOptions();
         propertiesComponent = PropertiesComponent.getInstance(project);
-        optionDefaults = new HashMap<String, String>();
+        optionDefaults = new HashMap<>();
         this.project = project;
         instance = this;
     }
@@ -84,7 +84,7 @@ public class GitflowConfigurable implements Configurable {
                 if (optionMap.get("inputText") != null){
                     String textInForm = gitflowOptionsForm.getOptionText(optionId);
                     String savedOptionText = propertiesComponent.getValue(optionId+"text");
-                    if (textInForm.equals(savedOptionText) == false){
+                    if (!textInForm.equals(savedOptionText)){
                         return true;
                     }
                 }

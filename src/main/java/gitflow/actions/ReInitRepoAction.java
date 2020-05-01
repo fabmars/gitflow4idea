@@ -1,8 +1,11 @@
 package gitflow.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitRepository;
+import gitflow.GitflowBranchUtil;
+import gitflow.GitflowBranchUtilManager;
 import gitflow.GitflowInitOptions;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,7 +20,7 @@ public class ReInitRepoAction extends InitRepoAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        gitflow.GitflowBranchUtil branchUtil = gitflow.GitflowBranchUtilManager.getBranchUtil(myRepo);
+        GitflowBranchUtil branchUtil = GitflowBranchUtilManager.getBranchUtil(myRepo);
 
         // Only show when gitflow is setup
         if (branchUtil.hasGitflow()) {
@@ -45,7 +48,7 @@ public class ReInitRepoAction extends InitRepoAction {
     }
 
     @Override
-    protected GitflowLineHandler getLineHandler() {
-        return new GitflowErrorsListener(myProject);
+    protected GitflowLineHandler getLineHandler(Project project) {
+        return new GitflowErrorsListener(project);
     }
 }

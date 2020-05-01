@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class FinishBugfixAction extends AbstractBranchAction {
 
-    String customBugfixName =null;
+    String customBugfixName;
 
     public FinishBugfixAction() {
         super("Finish Bugfix", BranchType.Bugfix);
@@ -25,7 +25,7 @@ public class FinishBugfixAction extends AbstractBranchAction {
 
     FinishBugfixAction(GitRepository repo, String name) {
         super(repo, "Finish Bugfix", BranchType.Bugfix);
-        customBugfixName =name;
+        customBugfixName = name;
     }
 
     @Override
@@ -33,28 +33,28 @@ public class FinishBugfixAction extends AbstractBranchAction {
         super.actionPerformed(e);
 
         String currentBranchName = GitBranchUtil.getBranchNameOrRev(myRepo);
-        if (currentBranchName.isEmpty()==false){
+        if (!currentBranchName.isEmpty()){
 
-            final AnActionEvent event=e;
+            Project project = e.getProject();
+            final AnActionEvent event = e;
             final String bugfixName;
             // Check if a bugfix name was specified, otherwise take name from current branch
-            if (customBugfixName !=null){
+            if (customBugfixName != null){
                 bugfixName = customBugfixName;
             }
             else{
-                GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+                GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
                 bugfixName = gitflowConfigUtil.getBugfixNameFromBranch(currentBranchName);
             }
 
-            this.runAction(myProject, bugfixName);
+            this.runAction(project, bugfixName);
         }
 
     }
 
     public void runAction(final Project project, final String bugfixName){
-        super.runAction(project, null, bugfixName, null);
 
-        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+        final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
         final FinishBugfixAction that = this;
 
         GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
@@ -62,7 +62,7 @@ public class FinishBugfixAction extends AbstractBranchAction {
         //get the base branch for this bugfix
         final String baseBranch = gitflowConfigUtil.getBaseBranch(branchUtil.getPrefixBugfix()+bugfixName);
 
-        new Task.Backgroundable(myProject,"Finishing bugfix "+bugfixName,false){
+        new Task.Backgroundable(project,"Finishing bugfix "+bugfixName,false){
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 GitCommandResult result =  myGitflow.finishBugfix(myRepo, bugfixName, errorLineHandler);
@@ -88,9 +88,9 @@ public class FinishBugfixAction extends AbstractBranchAction {
 
                 //merge conflicts if necessary
                 if (errorLineHandler.hasMergeError){
-                    if (handleMerge()){
+                    if (handleMerge(project)){
                         that.runAction(project, bugfixName);
-                        FinishBugfixAction completeFinishBugfixAction = new FinishBugfixAction(myRepo, bugfixName);
+                        //FinishBugfixAction completeFinishBugfixAction = new FinishBugfixAction(myRepo, bugfixName);
                     }
 
                 }

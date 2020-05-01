@@ -17,8 +17,8 @@ public class GitflowOptionsFactory {
 
     //private constructor to avoid client applications to use constructor
     private GitflowOptionsFactory(){
-        options = new HashMap<Enum<TYPE>, ArrayList<Map<String,String>>>();
-        optionsMap = new HashMap<String, HashMap<String,String>>();
+        options = new HashMap<>();
+        optionsMap = new HashMap<>();
 
         addBranchType(TYPE.FEATURE);
         addOption(TYPE.FEATURE, "Fetch from Origin", "fetchFromOrigin" , "-F");
@@ -56,7 +56,7 @@ public class GitflowOptionsFactory {
     }
 
     private void addBranchType(Enum<TYPE> branchType){
-        options.put(branchType, new ArrayList<Map<String, String>>());
+        options.put(branchType, new ArrayList<>());
     }
 
     private void addOption(Enum<TYPE> branchType, String description, String key, @Nullable String flag){
@@ -64,7 +64,7 @@ public class GitflowOptionsFactory {
     }
 
     private void addOption(Enum<TYPE> branchType, String description, String key, @Nullable String flag, @Nullable String inputText, @Nullable String toolTip){
-        HashMap<String, String> optionMap = new HashMap<String, String>();
+        HashMap<String, String> optionMap = new HashMap<>();
         optionMap.put("description", description);
         optionMap.put("key", key);
         if (flag != null){
