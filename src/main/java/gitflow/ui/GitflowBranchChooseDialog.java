@@ -16,7 +16,7 @@ import java.util.List;
 
 public class GitflowBranchChooseDialog extends DialogWrapper {
     private JPanel contentPane;
-    private JList branchList;
+    private JList<String> branchList;
 
 
     public GitflowBranchChooseDialog(Project project, List<String> branchNames) {
@@ -25,7 +25,8 @@ public class GitflowBranchChooseDialog extends DialogWrapper {
         setModal(true);
 
         setTitle("Choose Branch");
-        branchList.setListData(branchNames.toArray());
+        String[] branchNamesData = new String[branchNames.size()];
+        branchList.setListData(branchNames.toArray(branchNamesData));
 
         init();
     }

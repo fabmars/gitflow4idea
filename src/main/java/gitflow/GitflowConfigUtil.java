@@ -31,7 +31,7 @@ public class GitflowConfigUtil {
     public static final String PREFIX_SUPPORT = "gitflow.prefix.support";
     public static final String PREFIX_VERSIONTAG = "gitflow.prefix.versiontag";
 
-    private static  Map<Project, Map<GitRepository, GitflowConfigUtil>> gitflowConfigUtilMap = new HashMap<Project, Map<GitRepository, GitflowConfigUtil>>();
+    private static  Map<Project, Map<GitRepository, GitflowConfigUtil>> gitflowConfigUtilMap = new HashMap<>();
 
     Project project;
     GitRepository repo;
@@ -50,7 +50,7 @@ public class GitflowConfigUtil {
         if (gitflowConfigUtilMap.containsKey(project_) && gitflowConfigUtilMap.get(project_).containsKey(repo_)) {
             instance = gitflowConfigUtilMap.get(project_).get(repo_);
         } else {
-            Map<GitRepository, GitflowConfigUtil> innerMap = new HashMap<GitRepository, GitflowConfigUtil>();
+            Map<GitRepository, GitflowConfigUtil> innerMap = new HashMap<>();
             instance = new GitflowConfigUtil(project_, repo_);
 
             gitflowConfigUtilMap.put(project_, innerMap);
@@ -75,23 +75,20 @@ public class GitflowConfigUtil {
         VirtualFile root = repo.getRoot();
 
         try{
-            Future<Void> f = (Future<Void>) ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-                @Override
-                public void run() {
-                    try{
-                        masterBranch = GitConfigUtil.getValue(project, root, BRANCH_MASTER);
-                        developBranch = GitConfigUtil.getValue(project, root, BRANCH_DEVELOP);
-                        featurePrefix = GitConfigUtil.getValue(project,root,PREFIX_FEATURE);
-                        releasePrefix = GitConfigUtil.getValue(project,root,PREFIX_RELEASE);
-                        hotfixPrefix = GitConfigUtil.getValue(project,root,PREFIX_HOTFIX);
-                        bugfixPrefix = GitConfigUtil.getValue(project,root,PREFIX_BUGFIX);
-                        supportPrefix = GitConfigUtil.getValue(project,root,PREFIX_SUPPORT);
-                        versiontagPrefix = GitConfigUtil.getValue(project,root,PREFIX_VERSIONTAG);
-                    } catch (VcsException e) {
-                        NotifyUtil.notifyError(project, "Config error", e);
-                    }
-                }});
-                f.get();
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                try{
+                    masterBranch = GitConfigUtil.getValue(project, root, BRANCH_MASTER);
+                    developBranch = GitConfigUtil.getValue(project, root, BRANCH_DEVELOP);
+                    featurePrefix = GitConfigUtil.getValue(project,root,PREFIX_FEATURE);
+                    releasePrefix = GitConfigUtil.getValue(project,root,PREFIX_RELEASE);
+                    hotfixPrefix = GitConfigUtil.getValue(project,root,PREFIX_HOTFIX);
+                    bugfixPrefix = GitConfigUtil.getValue(project,root,PREFIX_BUGFIX);
+                    supportPrefix = GitConfigUtil.getValue(project,root,PREFIX_SUPPORT);
+                    versiontagPrefix = GitConfigUtil.getValue(project,root,PREFIX_VERSIONTAG);
+                } catch (VcsException e) {
+                    NotifyUtil.notifyError(project, "Config error", e);
+                }
+            }).get();
 
         }  catch (InterruptedException e) {
             e.printStackTrace();
@@ -102,19 +99,19 @@ public class GitflowConfigUtil {
 
 
     public String getFeatureNameFromBranch(String branchName){
-        return branchName.substring(branchName.indexOf(featurePrefix)+featurePrefix.length(),branchName.length());
+        return branchName.substring(branchName.indexOf(featurePrefix)+featurePrefix.length());
     }
 
     public String getReleaseNameFromBranch(String branchName){
-        return branchName.substring(branchName.indexOf(releasePrefix) + releasePrefix.length(), branchName.length());
+        return branchName.substring(branchName.indexOf(releasePrefix) + releasePrefix.length());
     }
 
     public String getHotfixNameFromBranch(String branchName){
-        return branchName.substring(branchName.indexOf(hotfixPrefix) + hotfixPrefix.length(), branchName.length());
+        return branchName.substring(branchName.indexOf(hotfixPrefix) + hotfixPrefix.length());
     }
 
     public String getBugfixNameFromBranch(String branchName){
-        return branchName.substring(branchName.indexOf(bugfixPrefix)+bugfixPrefix.length(),branchName.length());
+        return branchName.substring(branchName.indexOf(bugfixPrefix)+bugfixPrefix.length());
     }
 
     public String getRemoteNameFromBranch(String branchName){
@@ -213,7 +210,7 @@ public class GitflowConfigUtil {
 
         VirtualFile root = repo.getRoot();
 
-        String baseBranch=null;
+        String baseBranch = null;
         try{
             baseBranch = GitConfigUtil.getValue(project, root, "gitflow.branch."+branchName+".base");
         }

@@ -3,6 +3,7 @@ package gitflow.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitRepository;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 public class InitRepoAction extends GitflowAction {
 
     InitRepoAction() {
-        this( "Init Repo");
+        this("Init Repo");
     }
 
     InitRepoAction(String actionName) {
@@ -48,15 +49,16 @@ public class InitRepoAction extends GitflowAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        GitflowInitOptionsDialog optionsDialog = new GitflowInitOptionsDialog(myProject, branchUtil.getLocalBranchNames());
+        Project project = e.getProject();
+        GitflowInitOptionsDialog optionsDialog = new GitflowInitOptionsDialog(project, branchUtil.getLocalBranchNames());
         optionsDialog.show();
 
         if(optionsDialog.isOK()) {
-            final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
-            final GitflowLineHandler localLineHandler = getLineHandler();
+            final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
+            final GitflowLineHandler localLineHandler = getLineHandler(project);
             final GitflowInitOptions initOptions = optionsDialog.getOptions();
 
-            new Task.Backgroundable(myProject, getTitle(),false){
+            new Task.Backgroundable(project, getTitle(),false){
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
                     GitCommandResult result =
@@ -93,7 +95,7 @@ public class InitRepoAction extends GitflowAction {
         return "Initializing Repo";
     }
 
-    protected GitflowLineHandler getLineHandler() {
+    protected GitflowLineHandler getLineHandler(Project project) {
         return new LineHandler();
     }
 

@@ -11,8 +11,8 @@ import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 class RepoActions extends BranchActionGroup implements PopupElementWithAdditionalInfo, FileEditorManagerListener {
     Project myProject;
@@ -28,8 +28,8 @@ class RepoActions extends BranchActionGroup implements PopupElementWithAdditiona
         project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this);
     }
 
-    public ArrayList<AnAction> getRepoActions(boolean includeAdvanced){
-        ArrayList<AnAction> actionList = new ArrayList<AnAction>();
+    public List<AnAction> getRepoActions(boolean includeAdvanced){
+        List<AnAction> actionList = new LinkedList<>();
 
         actionList.add(new InitRepoAction(myRepo));
 
@@ -78,20 +78,14 @@ class RepoActions extends BranchActionGroup implements PopupElementWithAdditiona
 
     public DefaultActionGroup getRepoActionGroup(boolean includeAdvanced){
         DefaultActionGroup actionGroup = new DefaultActionGroup();
-
-        Iterator actionsIterator = this.getRepoActions(includeAdvanced).iterator();
-        while(actionsIterator.hasNext()){
-            AnAction action = (AnAction) actionsIterator.next();
-            actionGroup.add(action);
-        }
-
+        this.getRepoActions(includeAdvanced).forEach(action -> actionGroup.add(action));
         return actionGroup;
     }
 
     @NotNull
     @Override
     public AnAction[] getChildren(@Nullable AnActionEvent e) {
-        ArrayList<AnAction> children = this.getRepoActions(false);
+        List<AnAction> children = this.getRepoActions(false);
         return children.toArray(new AnAction[children.size()]);
     }
 

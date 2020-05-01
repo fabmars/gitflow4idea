@@ -6,10 +6,10 @@ import gitflow.ui.NotifyUtil;
 
 public class GitflowErrorsListener extends GitflowLineHandler{
 
-    boolean hasMergeError=false;
+    boolean hasMergeError = false;
 
     GitflowErrorsListener(Project project){
-        myProject=project;
+        myProject = project;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class GitflowErrorsListener extends GitflowLineHandler{
             NotifyUtil.notifyError(myProject, "Error", "Not a gitflow-enabled repo yet. Please init git flow");
         }
         if (line.contains("There were merge conflicts")){
-            hasMergeError=true;
+            hasMergeError = true;
         }
     }
 

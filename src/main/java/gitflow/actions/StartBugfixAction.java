@@ -25,7 +25,8 @@ public class StartBugfixAction extends AbstractStartAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        GitflowStartBugfixDialog dialog = new GitflowStartBugfixDialog(myProject, myRepo);
+        Project project = e.getProject();
+        GitflowStartBugfixDialog dialog = new GitflowStartBugfixDialog(project, myRepo);
         dialog.show();
 
         if (dialog.getExitCode() != DialogWrapper.OK_EXIT_CODE) return;
@@ -38,12 +39,11 @@ public class StartBugfixAction extends AbstractStartAction {
 
     @Override
     public void runAction(final Project project, final String baseBranchName, final String bugfixName, @Nullable final Runnable callInAwtLater){
-        super.runAction(project, baseBranchName, bugfixName, callInAwtLater);
 
-        new Task.Backgroundable(myProject, "Starting bugfix " + bugfixName, false) {
+        new Task.Backgroundable(project, "Starting bugfix " + bugfixName, false) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                final GitCommandResult commandResult = createBugfixBranch(baseBranchName, bugfixName);
+                final GitCommandResult commandResult = createBugfixBranch(project, baseBranchName, bugfixName);
                 if (callInAwtLater != null && commandResult.success()) {
                     callInAwtLater.run();
                 }
@@ -51,15 +51,15 @@ public class StartBugfixAction extends AbstractStartAction {
         }.queue();
     }
 
-    private GitCommandResult createBugfixBranch(String baseBranchName, String bugfixName) {
-        GitflowErrorsListener errorListener = new GitflowErrorsListener(myProject);
+    private GitCommandResult createBugfixBranch(Project project, String baseBranchName, String bugfixName) {
+        GitflowErrorsListener errorListener = new GitflowErrorsListener(project);
         GitCommandResult result = myGitflow.startBugfix(myRepo, bugfixName, baseBranchName, errorListener);
 
         if (result.success()) {
             String startedBugfixMessage = String.format("A new branch '%s%s' was created, based on '%s'", branchUtil.getPrefixBugfix(), bugfixName, baseBranchName);
-            NotifyUtil.notifySuccess(myProject, bugfixName, startedBugfixMessage);
+            NotifyUtil.notifySuccess(project, bugfixName, startedBugfixMessage);
         } else {
-            NotifyUtil.notifyError(myProject, "Error", "Please have a look at the Version Control console for more details");
+            NotifyUtil.notifyError(project, "Error", "Please have a look at the Version Control console for more details");
         }
 
         myRepo.update();

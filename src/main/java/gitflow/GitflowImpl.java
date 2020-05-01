@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -375,11 +374,9 @@ public class GitflowImpl extends GitImpl implements Gitflow {
     }
 
     private void setUrl(GitLineHandler h, GitRepository repository) {
-        ArrayList<GitRemote> remotes = new ArrayList<GitRemote>(repository.getRemotes());
-
         //make sure a remote repository is available
-        if (!remotes.isEmpty()) {
-            h.setUrl(remotes.iterator().next().getFirstUrl());
+        if (!repository.getRemotes().isEmpty()) {
+            h.setUrl(repository.getRemotes().iterator().next().getFirstUrl());
         }
     }
 

@@ -7,7 +7,7 @@ public class DefaultOptions {
 	private static final Map<String, String> options;
 	static
 	{
-		options = new HashMap<String, String>();
+		options = new HashMap<>();
 		options.put("RELEASE_customTagCommitMessage", "Tagging version %name%");
 		options.put("HOTFIX_customHotfixCommitMessage", "Tagging hotfix %name%");
 	}

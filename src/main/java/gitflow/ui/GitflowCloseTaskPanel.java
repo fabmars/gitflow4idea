@@ -59,7 +59,7 @@ public class GitflowCloseTaskPanel extends TaskDialogPanel {
                 : myTaskManager.suggestBranchName(task);
         
         if (GitflowConfigurable.isOptionActive(project, "HOTFIX_dontTag")) {
-            tagMessage="";
+            tagMessage = "";
             tagMessageTextField.setEnabled(false);
             tagMessageTextField.setToolTipText("Hotfix tagging is disabled in Gitflow options");
 

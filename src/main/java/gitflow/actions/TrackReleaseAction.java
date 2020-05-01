@@ -3,6 +3,7 @@ package gitflow.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import git4idea.commands.GitCommandResult;
 import git4idea.repo.GitRepository;
 import gitflow.GitflowConfigUtil;
@@ -10,8 +11,9 @@ import gitflow.ui.GitflowBranchChooseDialog;
 import gitflow.ui.NotifyUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 public class TrackReleaseAction extends AbstractTrackAction {
 
@@ -27,28 +29,23 @@ public class TrackReleaseAction extends AbstractTrackAction {
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
-        ArrayList<String> remoteBranches = branchUtil.getRemoteBranchNames();
-        ArrayList<String> remoteReleaseBranches = new ArrayList<String>();
-
+        List<String> remoteBranches = branchUtil.getRemoteBranchNames();
         //get only the branches with the proper prefix
-        for(Iterator<String> i = remoteBranches.iterator(); i.hasNext(); ) {
-            String item = i.next();
-            if (item.contains(branchUtil.getPrefixRelease())){
-                remoteReleaseBranches.add(item);
-            }
-        }
+        List<String> remoteReleaseBranches = remoteBranches.stream()
+                .filter(item -> item.contains(branchUtil.getPrefixRelease())).collect(toList());
 
-        if (remoteBranches.size()>0){
-            GitflowBranchChooseDialog branchChoose = new GitflowBranchChooseDialog(myProject,remoteReleaseBranches);
+        final Project project = e.getProject();
+        if (!remoteBranches.isEmpty()){
+            GitflowBranchChooseDialog branchChoose = new GitflowBranchChooseDialog(project,remoteReleaseBranches);
 
             branchChoose.show();
             if (branchChoose.isOK()){
-                String branchName= branchChoose.getSelectedBranchName();
-                GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+                String branchName = branchChoose.getSelectedBranchName();
+                GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
                 final String releaseName = gitflowConfigUtil.getReleaseNameFromBranch(branchName);
-                final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+                final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
 
-                new Task.Backgroundable(myProject,"Tracking release "+releaseName,false){
+                new Task.Backgroundable(project,"Tracking release "+releaseName,false){
                     @Override
                     public void run(@NotNull ProgressIndicator indicator) {
                         GitCommandResult result = myGitflow.trackRelease(myRepo, releaseName, errorLineHandler);
@@ -67,7 +64,7 @@ public class TrackReleaseAction extends AbstractTrackAction {
             }
         }
         else {
-            NotifyUtil.notifyError(myProject, "Error", "No remote branches");
+            NotifyUtil.notifyError(project, "Error", "No remote branches");
         }
 
     }

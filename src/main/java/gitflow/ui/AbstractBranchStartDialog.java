@@ -3,15 +3,13 @@ package gitflow.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import git4idea.repo.GitRepository;
+import gitflow.GitflowBranchUtil;
+import gitflow.GitflowBranchUtilManager;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import git4idea.remote.GitRememberedInputs;
-import git4idea.repo.GitRepository;
-import gitflow.GitflowBranchUtil;
-import gitflow.GitflowBranchUtilManager;
 
 /**
  * Base class for a "start" dialog. Such a dialog prompts the user to enter a name for a new branch
@@ -21,7 +19,7 @@ public abstract class AbstractBranchStartDialog extends DialogWrapper {
 
     private JPanel contentPane;
     private JTextField branchNameTextField;
-    private JComboBox branchFromCombo;
+    private JComboBox<GitflowBranchUtil.ComboEntry> branchFromCombo;
     private JLabel branchNameLabel;
     private JLabel spacesLabel;
     private JLabel branchFromTitle;
@@ -73,7 +71,7 @@ public abstract class AbstractBranchStartDialog extends DialogWrapper {
             }
         });
 
-        if (showBranchFromCombo() == false){
+        if (!showBranchFromCombo()){
             branchFromTitle.setVisible(false);
             branchFromCombo.setVisible(false);
         }

@@ -16,26 +16,24 @@ import gitflow.GitflowBranchUtilManager;
 import gitflow.ui.NotifyUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-
 public abstract class GitflowAction extends DumbAwareAction {
 
     private static final long VFM_REFRESH_DELAY = 750L;
 
-    Project myProject;
     Gitflow myGitflow = ServiceManager.getService(Gitflow.class);
-    ArrayList<GitRepository> repos = new ArrayList<GitRepository>();
     GitRepository myRepo;
     GitflowBranchUtil branchUtil;
 
     VirtualFileManager virtualFileMananger;
 
-    GitflowAction( String actionName){ super(actionName); }
+    GitflowAction(String actionName){
+        super(actionName);
+        virtualFileMananger = VirtualFileManager.getInstance();
+    }
 
     GitflowAction(GitRepository repo, String actionName){
-        super(actionName);
+        this(actionName);
         myRepo = repo;
-
         branchUtil = GitflowBranchUtilManager.getBranchUtil(myRepo);
     }
 
@@ -46,20 +44,8 @@ public abstract class GitflowAction extends DumbAwareAction {
         // if repo isn't set explicitly, such as in the case of starting from keyboard shortcut, infer it
         if (myRepo == null){
             myRepo = GitBranchUtil.getCurrentRepository(project);
+            branchUtil = GitflowBranchUtilManager.getBranchUtil(myRepo);
         }
-        setup(project);
-    }
-
-    private void setup(Project project){
-        myProject = project;
-        virtualFileMananger = VirtualFileManager.getInstance();
-        repos.add(myRepo);
-
-        branchUtil= GitflowBranchUtilManager.getBranchUtil(myRepo);
-    }
-
-    public void runAction(final Project project, final String baseBranchName, final String branchName, @Nullable final Runnable callInAwtLater){
-        setup(project);
     }
 
     //returns true if merge successful, false otherwise
@@ -95,18 +81,18 @@ public abstract class GitflowAction extends DumbAwareAction {
         }
     }
 
-    private static boolean askUserForMergeSuccess(Project myProject) {
+    private static boolean askUserForMergeSuccess(Project project) {
         //if merge was completed successfully, finish the action
         //note that if it wasn't intellij is left in the "merging state", and git4idea provides no UI way to resolve it
         //merging can be done via intellij itself or any other util
-        int answer = Messages.showYesNoDialog(myProject, "Was the merge completed succesfully?", "Merge", Messages.getQuestionIcon());
-        if (answer==0){
-            GitMerger gitMerger=new GitMerger(myProject);
+        int answer = Messages.showYesNoDialog(project, "Was the merge completed succesfully?", "Merge", Messages.getQuestionIcon());
+        if (answer == Messages.YES){
+            GitMerger gitMerger = new GitMerger(project);
 
             try {
                 gitMerger.mergeCommit(gitMerger.getMergingRoots());
             } catch (VcsException e1) {
-                NotifyUtil.notifyError(myProject, "Error", "Error committing merge result");
+                NotifyUtil.notifyError(project, "Error", "Error committing merge result");
                 e1.printStackTrace();
             }
 
@@ -114,7 +100,7 @@ public abstract class GitflowAction extends DumbAwareAction {
         }
         else{
 
-	        NotifyUtil.notifyInfo(myProject,"Merge incomplete","To manually complete the merge choose VCS > Git > Resolve Conflicts.\n" +
+	        NotifyUtil.notifyInfo(project,"Merge incomplete","To manually complete the merge choose VCS > Git > Resolve Conflicts.\n" +
 			        "Once done, commit the merged files.\n");
             return false;
         }

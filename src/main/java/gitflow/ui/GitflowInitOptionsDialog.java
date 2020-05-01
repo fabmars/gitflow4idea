@@ -21,8 +21,8 @@ public class GitflowInitOptionsDialog extends DialogWrapper {
     private JPanel contentPane;
     private JCheckBox useNonDefaultConfigurationCheckBox;
 
-    private JComboBox productionBranchComboBox;
-    private JComboBox developmentBranchComboBox;
+    private JComboBox<String> productionBranchComboBox;
+    private JComboBox<String> developmentBranchComboBox;
     private JTextField featurePrefixTextField;
     private JTextField releasePrefixTextField;
     private JTextField hotfixPrefixTextField;
@@ -35,16 +35,11 @@ public class GitflowInitOptionsDialog extends DialogWrapper {
 
         setTitle("Options for gitflow init");
 
-        productionBranchComboBox.setModel(new CollectionComboBoxModel(localBranches));
-        developmentBranchComboBox.setModel(new CollectionComboBoxModel(localBranches));
+        productionBranchComboBox.setModel(new CollectionComboBoxModel<>(localBranches));
+        developmentBranchComboBox.setModel(new CollectionComboBoxModel<>(localBranches));
 
         init();
-        useNonDefaultConfigurationCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                enableFields(e.getStateChange()==ItemEvent.SELECTED);
-            }
-        });
+        useNonDefaultConfigurationCheckBox.addItemListener(e -> enableFields(e.getStateChange() == ItemEvent.SELECTED));
     }
 
     private void enableFields(boolean enable) {

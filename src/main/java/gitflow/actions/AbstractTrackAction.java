@@ -16,7 +16,7 @@ public abstract class AbstractTrackAction extends AbstractBranchAction {
         String prefix;
         switch (type) {
             case Feature:
-                prefix = branchUtil.getPrefixFeature();;
+                prefix = branchUtil.getPrefixFeature();
                 break;
             case Release:
                 prefix = branchUtil.getPrefixRelease();
@@ -31,6 +31,6 @@ public abstract class AbstractTrackAction extends AbstractBranchAction {
         boolean noRemoteBranches = branchUtil.getRemoteBranchesWithPrefix(prefix).isEmpty();
         boolean trackedAllBranches = branchUtil.areAllBranchesTracked(prefix);
 
-        return noRemoteBranches == false && trackedAllBranches == false;
+        return !noRemoteBranches && !trackedAllBranches;
     }
 }

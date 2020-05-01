@@ -3,6 +3,7 @@ package gitflow.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import git4idea.branch.GitBranchUtil;
 import git4idea.commands.GitCommandResult;
@@ -14,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class FinishReleaseAction extends AbstractBranchAction {
 
-	String customReleaseName=null;
-	String customtagMessage=null;
+    String customReleaseName;
+    String customTagMessage;
 
     FinishReleaseAction() {
         super("Finish Release", AbstractBranchAction.BranchType.Release);
@@ -25,58 +26,59 @@ public class FinishReleaseAction extends AbstractBranchAction {
         super(repo, "Finish Release", BranchType.Release);
     }
 
-	FinishReleaseAction(String name, String tagMessage) {
-		super("Finish Release", BranchType.Release);
-		customReleaseName = name;
-		customtagMessage = tagMessage;
-	}
+    FinishReleaseAction(String name, String tagMessage) {
+      super("Finish Release", BranchType.Release);
+      customReleaseName = name;
+      customTagMessage = tagMessage;
+    }
 
     @Override
     public void actionPerformed(AnActionEvent e) {
         super.actionPerformed(e);
 
         String currentBranchName = GitBranchUtil.getBranchNameOrRev(myRepo);
-        if (currentBranchName.isEmpty()==false){
+        if (!currentBranchName.isEmpty()){
 
-	        final AnActionEvent event=e;
+            Project project = e.getProject();
+            final AnActionEvent event = e;
 
             final String tagMessage;
             final String releaseName;
 
-            GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(myProject, myRepo);
+            GitflowConfigUtil gitflowConfigUtil = GitflowConfigUtil.getInstance(project, myRepo);
 
-	        // Check if a release name was specified, otherwise take name from current branch
-	        releaseName = customReleaseName!=null ? customReleaseName:gitflowConfigUtil.getReleaseNameFromBranch(currentBranchName);
+	          // Check if a release name was specified, otherwise take name from current branch
+	          releaseName = customReleaseName != null ? customReleaseName:gitflowConfigUtil.getReleaseNameFromBranch(currentBranchName);
 
-            final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(myProject);
+            final GitflowErrorsListener errorLineHandler = new GitflowErrorsListener(project);
             
-            String tagMessageTemplate = GitflowConfigurable.getOptionTextString(myProject, "RELEASE_customTagCommitMessage").replace("%name%", releaseName);
-	        String tagMessageDraft;
+            String tagMessageTemplate = GitflowConfigurable.getOptionTextString(project, "RELEASE_customTagCommitMessage").replace("%name%", releaseName);
+	          String tagMessageDraft;
 
-	        boolean cancelAction=false;
+	          boolean cancelAction = false;
 
-            if (GitflowConfigurable.isOptionActive(myProject, "RELEASE_dontTag")) {
-                tagMessage="";
+            if (GitflowConfigurable.isOptionActive(project, "RELEASE_dontTag")) {
+                tagMessage = "";
             }
-            else if (customtagMessage!=null){
+            else if (customTagMessage != null){
 	            //probably repeating the release finish after a merge
-	            tagMessage=customtagMessage;
+	            tagMessage = customTagMessage;
             }
             else{
-                tagMessageDraft = Messages.showInputDialog(myProject, "Enter the tag message:", "Finish Release", Messages.getQuestionIcon(), tagMessageTemplate, null);
-                if (tagMessageDraft==null){
-                    cancelAction=true;
-                    tagMessage="";
+                tagMessageDraft = Messages.showInputDialog(project, "Enter the tag message:", "Finish Release", Messages.getQuestionIcon(), tagMessageTemplate, null);
+                if (tagMessageDraft == null){
+                    cancelAction = true;
+                    tagMessage = "";
                 }
                 else{
-                    tagMessage=tagMessageDraft;
+                    tagMessage = tagMessageDraft;
                 }
             }
 
 
             if (!cancelAction){
 
-                new Task.Backgroundable(myProject,"Finishing release "+releaseName,false){
+                new Task.Backgroundable(project,"Finishing release "+releaseName,false){
                     @Override
                     public void run(@NotNull ProgressIndicator indicator) {
                         GitCommandResult result =  myGitflow.finishRelease(myRepo, releaseName, tagMessage, errorLineHandler);
@@ -102,9 +104,9 @@ public class FinishReleaseAction extends AbstractBranchAction {
 
 	                    //merge conflicts if necessary
 	                    if (errorLineHandler.hasMergeError){
-		                    if (handleMerge(myProject)) {
-			                    FinishReleaseAction completeFinisReleaseAction = new FinishReleaseAction(releaseName, tagMessage);
-			                    completeFinisReleaseAction.actionPerformed(event);
+		                    if (handleMerge(project)) {
+			                    FinishReleaseAction completeFinishReleaseAction = new FinishReleaseAction(releaseName, tagMessage);
+			                    completeFinishReleaseAction.actionPerformed(event);
 		                    }
 	                    }
                     }
